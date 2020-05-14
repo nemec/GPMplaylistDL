@@ -1,0 +1,11 @@
+GOOGLE_USERNAME = "username"
+GOOGLE_PASSWORD = ""  # App-specific passwords work here too
+DEVICE_MAC_ADDRESS = None  # I can't remember how I found this, can be left None
+
+IGNORE_PLAYLISTS = [
+# Example:
+#    "Workout",
+#    "Summer 2018"
+]
+
+ROOT_MUSIC_DIRECTORY = None  # Playlists can require abs. paths. Default is current dir
