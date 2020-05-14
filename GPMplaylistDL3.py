@@ -232,7 +232,7 @@ for ply in playlists:
 
 
 # thumbs up playlist
-cur_playlist = Playlist('auto-playlist-thumbs-up')
+curPlaylist = Playlist('auto-playlist-thumbs-up')
 songs = mc.get_all_songs()
 thumbs_up_lib = [t for t in songs if t.get('rating') == '5']
 track_cache = set()
@@ -294,12 +294,12 @@ if os.path.isfile('getephemthumbsup.json'):
 if curPlaylist.songs:
     master.append(curPlaylist)
 
-
+print(master)
 
 # Step through the playlists and download songs
 for playlist in master:
     if playlist.name in IGNORE_PLAYLISTS:
-        continue
+       continue
     if not quiet:
         print("Grabbing", playlist)
     for song in playlist.songs:
