@@ -2,6 +2,12 @@ GOOGLE_USERNAME = "username"
 GOOGLE_PASSWORD = ""  # App-specific passwords work here too
 DEVICE_MAC_ADDRESS = None  # I can't remember how I found this, can be left None
 
+QUIET = False # set to true to completely silence
+PRINT_SONGS = True # set to true to show each song path before it's downloaded
+
+EXPORT_WINAMP_PLAYLIST = False
+EXPORT_M3U_PLAYLIST = True
+
 IGNORE_PLAYLISTS = [
 # Example:
 #    "Workout",
@@ -9,3 +15,4 @@ IGNORE_PLAYLISTS = [
 ]
 
 ROOT_MUSIC_DIRECTORY = None  # Playlists can require abs. paths. Default is current dir
+PLAYLIST_DIRECTORY = 'playlists' # Default is relative to ROOT_MUSIC_DIRECTORY

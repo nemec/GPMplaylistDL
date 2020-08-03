@@ -18,6 +18,30 @@ For further documentation on what I'm using here, check out:
 http://unofficial-google-music-api.readthedocs.io/en/latest/reference/mobileclient.html
 '''
 
+'''
+MIT License
+Copyright 2020 fattredd, alkman100, Dan Nemec
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software and associated documentation files (the "Software"), to deal in
+the Software without restriction, including without limitation the rights to
+use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+of the Software, and to permit persons to whom the Software is furnished to do
+so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+'''
+
+
 from gmusicapi import Mobileclient
 from gmusicapi.exceptions import CallFailure
 import requests
@@ -28,29 +52,16 @@ import json
 import re
 from config import (
     GOOGLE_USERNAME, GOOGLE_PASSWORD,
-    ROOT_MUSIC_DIRECTORY, DEVICE_MAC_ADDRESS,
-    IGNORE_PLAYLISTS
+    ROOT_MUSIC_DIRECTORY, PLAYLIST_DIRECTORY,
+    DEVICE_MAC_ADDRESS, IGNORE_PLAYLISTS,
+    EXPORT_M3U_PLAYLIST, EXPORT_WINAMP_PLAYLIST,
+    PRINT_SONGS, QUIET
 )
-
-# Account settings
-
-
-# Output Settings
-showSongs = True # set to true to show each song path before it's downloaded
-quiet = False # set to true to completely silence
-
-# Playlist settings
-## Export as...
-m3u = True
-winamp = False
 
 if ROOT_MUSIC_DIRECTORY == "" or ROOT_MUSIC_DIRECTORY is None:
     ROOT_MUSIC_DIRECTORY = os.path.realpath('.')
 
 
-# Here thar be dragons
-
-# Start with some declarations
 def dlSong(id, name):
     try:
         url = mc.get_stream_url(id, device_id=device_id)
@@ -112,6 +123,7 @@ def clean(s):
     if len(bytes(s.encode('utf-8'))) > 250:
         s = s.encode('utf-8')[:250].decode('utf-8', errors='ignore')
     return s
+
 
 class Playlist(object):
     def __init__(self, name):
@@ -177,6 +189,7 @@ class Song(object):
     def __repr__(self):
         return "{} - {}".format(self.artist, self.title)
 
+
 # Login
 mc = Mobileclient()
 mc.__init__(debug_logging=False, validate=True, verify_ssl=True)
@@ -207,7 +220,7 @@ mc.login(GOOGLE_USERNAME, GOOGLE_PASSWORD, device_id)
 # Grab all playlists, and sort them into a structure
 mc.get_all_playlists()
 playlists = mc.get_all_user_playlist_contents()
-if not quiet:
+if not QUIET:
     print(len(playlists), "playlist(s) found.")
 master = []
 for ply in playlists:
@@ -222,7 +235,14 @@ for ply in playlists:
             number = song['track']['trackNumber']
             artist = song['track']['artist']
             album = song['track']['album']
-            artist_art = song['track'].get('artistArtRef', [{}])[0].get('url')
+            
+            artist_art_nodes = song['track'].get('artistArtRef', [{}])
+            artist_art = artist_art_nodes[0].get('url')
+            # try to get the square art
+            for art in artist_art_nodes:
+                if art.get('aspectRatio') == 1:
+                    artist_art = art.get('url')
+
             album_art = song['track'].get('albumArtRef', [{}])[0].get('url')
             length = int(song['track']['durationMillis']) / 1000
             metadata = json.dumps(song['track'], indent=2)
@@ -237,7 +257,7 @@ songs = mc.get_all_songs()
 thumbs_up_lib = [t for t in songs if t.get('rating') == '5']
 track_cache = set()
 if thumbs_up_lib:
-    if not quiet:
+    if not QUIET:
         print("Downloading thumbs-up playlist data")
     for info in thumbs_up_lib:
         tid = info.get('storeId')
@@ -254,8 +274,9 @@ if thumbs_up_lib:
         metadata = json.dumps(info, indent=2)
         newSong = Song(tid, title, number, artist, album, length, artist_art, album_art, metadata)
         curPlaylist.addSong(newSong)
+
 if os.path.isfile('getephemthumbsup.json'):
-    if not quiet:
+    if not QUIET:
         print("Adding data from getephemthumbsup json file")
     artist_cache = {}
     # get response when desktop client posts to
@@ -294,13 +315,12 @@ if os.path.isfile('getephemthumbsup.json'):
 if curPlaylist.songs:
     master.append(curPlaylist)
 
-print(master)
 
 # Step through the playlists and download songs
 for playlist in master:
     if playlist.name in IGNORE_PLAYLISTS:
        continue
-    if not quiet:
+    if not QUIET:
         print("Grabbing", playlist)
     for song in playlist.songs:
         albumart_path = playlist.albumArtPath(song)
@@ -319,13 +339,13 @@ for playlist in master:
         
         path = playlist.songPath(song)
         if not os.path.isfile(path): # Skip existing songs
-            if showSongs and not quiet:
+            if PRINT_SONGS and not QUIET:
                 print("DL:", path)
             dlSong(song.tid, path)
 
 
 # Deal with playlists
-if m3u:
+if EXPORT_M3U_PLAYLIST:
     for playlist in master:
         fname = playlist.name + ".m3u"
         with open(fname, "w+") as f:
@@ -336,7 +356,7 @@ if m3u:
                 f.write(meta + "\n")
                 f.write(path + "\n")
 
-if winamp:
+if EXPORT_WINAMP_PLAYLIST:
     for playlist in master:
         fname = playlist.name + ".pls"
         with open(fname, "w+") as f:
