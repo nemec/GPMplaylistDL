@@ -95,7 +95,7 @@ def main():
             #print(song_f)
             write_metadata(song_f)
         except Exception as e:
-            print(f"Error found writing song '{f}':")
+            print(f"Error found writing song '{song_f}':")
             print(e)
 
 

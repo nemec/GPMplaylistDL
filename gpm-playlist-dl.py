@@ -53,7 +53,7 @@ import re
 from config import (
     GOOGLE_USERNAME, GOOGLE_PASSWORD,
     ROOT_MUSIC_DIRECTORY, PLAYLIST_DIRECTORY,
-    DEVICE_MAC_ADDRESS, IGNORE_PLAYLISTS,
+    DEVICE_MAC_ADDRESS, ONLY_THESE_PLAYLISTS, IGNORE_PLAYLISTS,
     EXPORT_M3U_PLAYLIST, EXPORT_WINAMP_PLAYLIST,
     PRINT_SONGS, QUIET
 )
@@ -84,6 +84,15 @@ def dl_art(url, path):
 def dl_metadata(metadata, path):
     with open(path, "w") as f:
         f.write(metadata)
+        
+        
+def should_download_playlist(playlist):
+    if ONLY_THESE_PLAYLISTS and playlist.name not in ONLY_THESE_PLAYLISTS:
+        return False
+    if playlist.name in IGNORE_PLAYLISTS:
+        return False
+    return True
+    
 
 
 def clean(s):
@@ -318,8 +327,8 @@ if curPlaylist.songs:
 
 # Step through the playlists and download songs
 for playlist in master:
-    if playlist.name in IGNORE_PLAYLISTS:
-       continue
+    if not should_download_playlist(playlist):
+        continue
     if not QUIET:
         print("Grabbing", playlist)
     for song in playlist.songs:
@@ -345,9 +354,14 @@ for playlist in master:
 
 
 # Deal with playlists
+playlist_dir = os.path.join(ROOT_MUSIC_DIRECTORY, PLAYLIST_DIRECTORY)
+if not os.path.exists(playlist_dir):
+    os.mkdirs(playlist_dir)
 if EXPORT_M3U_PLAYLIST:
     for playlist in master:
-        fname = playlist.name + ".m3u"
+        if not should_download_playlist(playlist):
+            continue
+        fname = os.path.join(playlist_dir, playlist.name + ".m3u")
         with open(fname, "w+") as f:
             f.write("#EXTM3U\n")
             for song in playlist.songs:
@@ -358,7 +372,9 @@ if EXPORT_M3U_PLAYLIST:
 
 if EXPORT_WINAMP_PLAYLIST:
     for playlist in master:
-        fname = playlist.name + ".pls"
+        if not should_download_playlist(playlist):
+            continue
+        fname = os.path.join(playlist_dir, playlist.name + ".pls")
         with open(fname, "w+") as f:
             f.write("[playlist]")
             for i, song in enumerate(playlist.songs):

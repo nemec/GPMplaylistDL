@@ -1,4 +1,5 @@
-# GPMplaylistDL
+# GPM Playlist Downloader
+
 Google Play Music playlist downloader, forked from @fattredd: https://gist.github.com/fattredd/8b41590dfaf4bd819fa92dea0df216d2
 
 [Reddit post](https://www.reddit.com/r/DataHoarder/comments/8io4jv/google_play_music_playlist_downloader/)
@@ -24,6 +25,7 @@ For further documentation on what I'm using here, check out:
 http://unofficial-google-music-api.readthedocs.io/en/latest/reference/mobileclient.html
 
 ## Instructions
+
 Install python 3 and pip 3 (`python3-pip` on Debian)
 
 Once you have these installed, you'll need some python packages. You can install these from the command line with:
@@ -58,7 +60,7 @@ pip3 install -r requirements.txt
 Then navigate to your music directory and run the script with:
 
 ```sh
-python3 GPMplaylistDL3.py
+python3 gpm-playlist-dl.py
 ```
 
 If a song already exists, it will not be re-downloaded. HOWEVER, if you move

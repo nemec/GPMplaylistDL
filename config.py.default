@@ -8,6 +8,10 @@ PRINT_SONGS = True # set to true to show each song path before it's downloaded
 EXPORT_WINAMP_PLAYLIST = False
 EXPORT_M3U_PLAYLIST = True
 
+ONLY_THESE_PLAYLISTS = [
+# Add strings here to only download specific playlists
+]
+
 IGNORE_PLAYLISTS = [
 # Example:
 #    "Workout",
@@ -15,4 +19,4 @@ IGNORE_PLAYLISTS = [
 ]
 
 ROOT_MUSIC_DIRECTORY = None  # Playlists can require abs. paths. Default is current dir
-PLAYLIST_DIRECTORY = 'playlists' # Default is relative to ROOT_MUSIC_DIRECTORY
+PLAYLIST_DIRECTORY = 'playlists' # Relative to ROOT_MUSIC_DIRECTORY unless it's an absolute path.
